@@ -14,6 +14,7 @@
     "url": "https://github.com/yurica/node_first.git"
   },
   "dependencies": {
+    "body-parser": "^1.15.2",
     "express": "^4.14.0",
     "express-handlebars": "^3.0.0"
   },
