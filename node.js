@@ -5,8 +5,8 @@ var app = express();
 var handlebars = require('express-handlebars').create({
     defaultLayout: 'main',
     helpers: {
-        section: function(name, options){
-            if(!this._sections) this._sections = {};
+        section: function (name, options) {
+            if (!this._sections) this._sections = {};
             this._sections[name] = options.fn(this);
             return null;
         }
@@ -26,9 +26,23 @@ app.use(function (req, res, next) {
 });
 
 app.use(function (req, res, next) {
-    if(!res.locals.partials) res.locals.partials = {};
+    if (!res.locals.partials) res.locals.partials = {};
     res.locals.partials.weatherContext = getWeatherData();
     next();
+});
+
+app.use(require('body-parser').urlencoded({extended: true}));
+
+app.get('/newsletter', function (req, res) {
+    res.render('newsletter', {csrf: 'CSRF token goes here'});
+});
+
+app.post('/process', function (req, res) {
+    console.log('Form (from querystring): ' + req.query.form);
+    console.log('CSRF token (from hidden form field): ' + req.body._csrf);
+    console.log('Name (from visible form field): ' + req.body.name);
+    console.log('Email (from visible form field): ' + req.body.email);
+    res.redirect(303, '/thank-you');
 });
 
 app.get('/', function (req, res) {
@@ -69,11 +83,11 @@ app.get('/headers', function (req, res) {
     res.send(s);
 });
 
-app.get('/nursery-rhyme', function(req, res){
+app.get('/nursery-rhyme', function (req, res) {
     res.render('nursery-rhyme')
 });
 
-app.get('/data/nursery-rhyme', function(req, res){
+app.get('/data/nursery-rhyme', function (req, res) {
     res.json({
         animal: 'squirrel',
         bodyPart: 'tail',
