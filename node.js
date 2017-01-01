@@ -27,6 +27,10 @@ app.get('/about', function(req, res){
     });
 });
 
+app.get('/contact', function(req, res){
+    res.render('contact');
+});
+
 app.get('/tours/hood-river', function(req, res){
     res.render('tours/hood-river');
 });
