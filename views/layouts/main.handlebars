@@ -5,7 +5,7 @@
     {{#if showTests}}
         <link rel="stylesheet" href="/vendor/mocha.css">
     {{/if}}
-    <script src="//code.jquery.com/jquery-2.0.2.min.js"></script>
+    {{{_sections.head}}}
 </head>
 <body>
     <header><img src="/img/logo.jpg" alt="Meadowlark Travel Logo"></header>
@@ -24,5 +24,7 @@
         {{/if}}
         <script>mocha.run()</script>
     {{/if}}
+    <script src="//code.jquery.com/jquery-2.0.2.min.js"></script>
+    {{{_sections.jquery}}}
 </body>
 </html>

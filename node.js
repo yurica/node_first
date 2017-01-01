@@ -2,7 +2,16 @@ var express = require('express');
 var fortune = require('./lib/fortune.js');
 var app = express();
 
-var handlebars = require('express-handlebars').create({defaultLayout: 'main'});
+var handlebars = require('express-handlebars').create({
+    defaultLayout: 'main',
+    helpers: {
+        section: function(name, options){
+            if(!this._sections) this._sections = {};
+            this._sections[name] = options.fn(this);
+            return null;
+        }
+    }
+});
 app.engine('handlebars', handlebars.engine);
 
 app.set('view engine', 'handlebars');
@@ -37,6 +46,10 @@ app.get('/contact', function (req, res) {
     res.render('contact');
 });
 
+app.get('/jquery-test', function (req, res) {
+    res.render('jquery-test')
+});
+
 app.get('/tours/hood-river', function (req, res) {
     res.render('tours/hood-river');
 });
@@ -54,6 +67,19 @@ app.get('/headers', function (req, res) {
     var s = '';
     for (var name in req.headers) s += name + ': ' + req.headers[name] + '\n';
     res.send(s);
+});
+
+app.get('/nursery-rhyme', function(req, res){
+    res.render('nursery-rhyme')
+});
+
+app.get('/data/nursery-rhyme', function(req, res){
+    res.json({
+        animal: 'squirrel',
+        bodyPart: 'tail',
+        adjective: 'bushy',
+        noun: 'heck',
+    });
 });
 
 function getWeatherData() {
