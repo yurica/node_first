@@ -35,6 +35,10 @@ app.get('/tours/request-group-rate', function(req, res){
     res.render('tours/request-group-rate');
 });
 
+app.get('/tours/oregon-coast', function(req, res){
+    res.render('tours/oregon-coast');
+});
+
 app.use(function(req, res, next){
     res.status(404);
     res.render('404');
@@ -44,8 +48,8 @@ app.use(function(err, req, res, next){
     console.error(err.stack);
     res.status(500);
     res.render('500');
-})
+});
 
 app.listen(app.get('port'), function () {
     console.log('Express started on http://localhost:' + app.get('port') + '; press Ctrl-C to terminate.');
-})
+});

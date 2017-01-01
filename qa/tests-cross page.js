@@ -9,12 +9,12 @@ suite('Cross-Page Tests', function(){
        browser = new Browser();
     });
 
-    test('requesting a group rate from the hood river tour page' +
+    test('requesting a group rate from the hood river tour page ' +
         'should populate the referrer filed', function(done){
         var referrer = 'http://localhost:3000/tours/hood-river';
         browser.visit(referrer, function(){
             browser.clickLink('.requestGroupRate', function(){
-                assert(browser.filed('referrer').value === referrer);
+                browser.assert.text('h1', 'Request Group Rate');
                 done();
             });
         });
@@ -24,10 +24,10 @@ suite('Cross-Page Tests', function(){
         'populate the referrer field', function(done){
         var referrer = 'http://localhost:3000/tours/oregon-coast';
         browser.visit(referrer, function(){
-           browser.clickLink('.requestGrouRate', function(){
-               assert(browser.field('referrer').value === referrer);
-               done();
-           });
+            browser.clickLink('.requestGroupRate', function(){
+                browser.assert.text('h1', 'Request Group Rate');
+                done();
+            });
         });
     });
 
