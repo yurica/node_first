@@ -2,6 +2,7 @@ var express = require('express');
 var fortune = require('./lib/fortune.js');
 var app = express();
 var formidable = require('formidable');
+var jqupload = require('jquery-file-upload-middleware');
 var handlebars = require('express-handlebars').create({
     defaultLayout: 'main',
     helpers: {
@@ -33,8 +34,24 @@ app.use(function (req, res, next) {
 
 app.use(require('body-parser').urlencoded({extended: true}));
 
+app.use('/upload', function (req, res, next){
+    var now = Date.now();
+    jqupload.fileHandler({
+        uploadDir: function(){
+            return __dirname + '/public/uploads/' + now;
+        },
+        uploadUrl: function(){
+            return '/uploads/' + now;
+        },
+    });
+});
+
 app.get('/newsletter', function (req, res) {
     res.render('newsletter', {csrf: 'CSRF token goes here'});
+});
+
+app.get('/upload_file', function(req, res){
+    res.render('upload');
 });
 
 app.post('/process', function(req, res){
