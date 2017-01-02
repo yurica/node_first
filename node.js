@@ -3,6 +3,7 @@ var fortune = require('./lib/fortune.js');
 var app = express();
 var formidable = require('formidable');
 var jqupload = require('jquery-file-upload-middleware');
+var credentials = require('./credentials.js')
 var handlebars = require('express-handlebars').create({
     defaultLayout: 'main',
     helpers: {
@@ -13,6 +14,7 @@ var handlebars = require('express-handlebars').create({
         }
     }
 });
+var connect = require('connect');
 app.engine('handlebars', handlebars.engine);
 
 app.set('view engine', 'handlebars');
@@ -32,7 +34,13 @@ app.use(function (req, res, next) {
     next();
 });
 
+app.use(require('cookie-parser')(credentials.cookieSecret));
 app.use(require('body-parser').urlencoded({extended: true}));
+app.use(require('express-session')({
+    resave: false,
+    saveUninitialized: false,
+    secret: credentials.cookieSecret
+}));
 
 app.use('/upload', function (req, res, next){
     var now = Date.now();
@@ -72,6 +80,9 @@ app.post('/process', function(req, res){
 
 app.get('/', function (req, res) {
     res.render('home');
+    res.cookie('monster', 'nom nom');
+    res.cookie('signed_monster', 'nom nom', {signed: true});
+    req.session.userName = 'Anonymous';
 });
 
 app.get('/about', function (req, res) {
@@ -79,9 +90,16 @@ app.get('/about', function (req, res) {
         fortune: fortune.getFortune(),
         pageTestScript: '/qa/tests-about.js'
     });
+    var monster = req.cookies.monster;
+    var signedMonster = req.signedCookies.signed_monster;
+    console.log('Username : '+ req.session.userName);
+    console.log(monster);
+    console.log(signedMonster);
 });
 
 app.get('/contact', function (req, res) {
+    res.clearCookie('monster');
+    delete req.session.userName;
     res.render('contact');
 });
 
