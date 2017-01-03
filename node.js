@@ -15,6 +15,27 @@ var handlebars = require('express-handlebars').create({
     }
 });
 var connect = require('connect');
+
+function startServer(){
+    app.listen(app.get('port'), function(){
+        console.log('Express started in ' + app.get('env') +
+            ' mode on http://localhost:' + app.get('port') +
+            '; press Ctrl-C to terminate.');
+    });
+}
+
+if(require.main === module){
+    startServer();
+} else{
+    module.exports = startServer;
+}
+
+app.use(function(req, res, next){
+    var cluster = require('cluster');
+    if(cluster.isWorker) console.log('Worker %d received request',
+        cluster.worker.id);
+});
+
 app.engine('handlebars', handlebars.engine);
 
 app.set('view engine', 'handlebars');
@@ -84,6 +105,7 @@ app.get('/', function (req, res) {
     res.cookie('signed_monster', 'nom nom', {signed: true});
     req.session.userName = 'Anonymous';
 });
+
 
 app.get('/about', function (req, res) {
     res.render('about', {
@@ -176,8 +198,4 @@ app.use(function (err, req, res, next) {
     console.error(err.stack);
     res.status(500);
     res.render('500');
-});
-
-app.listen(app.get('port'), function () {
-    console.log('Express started on http://localhost:' + app.get('port') + '; press Ctrl-C to terminate.');
 });
