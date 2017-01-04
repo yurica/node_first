@@ -21,7 +21,8 @@
     "express-handlebars": "^3.0.0",
     "express-session": "^1.14.2",
     "formidable": "^1.0.17",
-    "jquery-file-upload-middleware": "^0.1.8"
+    "jquery-file-upload-middleware": "^0.1.8",
+    "loadtest": "^2.2.1"
   },
   "devDependencies": {
     "chai": "^3.5.0",

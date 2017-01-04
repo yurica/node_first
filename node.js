@@ -3,7 +3,7 @@ var fortune = require('./lib/fortune.js');
 var app = express();
 var formidable = require('formidable');
 var jqupload = require('jquery-file-upload-middleware');
-var credentials = require('./credentials.js')
+var credentials = require('./credentials.js');
 var handlebars = require('express-handlebars').create({
     defaultLayout: 'main',
     helpers: {
@@ -16,24 +16,43 @@ var handlebars = require('express-handlebars').create({
 });
 var connect = require('connect');
 
-function startServer(){
-    app.listen(app.get('port'), function(){
-        console.log('Express started in ' + app.get('env') +
-            ' mode on http://localhost:' + app.get('port') +
-            '; press Ctrl-C to terminate.');
+app.use(function (err, req, res, next) {
+    var domain = require('domain').create();
+
+    domain.on('error', function (err) {
+        console.error('DOMAIN ERROR CAUGHT\n', err.stack);
+        try {
+            setTimeout(function () {
+                console.error('Failsafe shutdown.');
+                process.exit(1);
+            }, 5000);
+
+            var worker = require('cluster').worker;
+            if (worker) worker.disconnect();
+            server.close();
+            try {
+                next(err);
+            } catch (error) {
+                console.error('Express error mechanism failed.\n', error.stack);
+                res.statusCode = 500;
+                res.setHeader('content-type', 'text/plain');
+                res.end('Server error.');
+            }
+        } catch (error) {
+            console.error('Unable to send 500 response.\n', error.stack);
+        }
+
+        domain.add(req);
+        domain.add(res);
+        domain.run(next);
     });
-}
+});
 
-if(require.main === module){
-    startServer();
-} else{
-    module.exports = startServer;
-}
-
-app.use(function(req, res, next){
+app.use(function (req, res, next) {
     var cluster = require('cluster');
-    if(cluster.isWorker) console.log('Worker %d received request',
+    if (cluster.isWorker) console.log('Worker %d received request',
         cluster.worker.id);
+    next();
 });
 
 app.engine('handlebars', handlebars.engine);
@@ -63,13 +82,13 @@ app.use(require('express-session')({
     secret: credentials.cookieSecret
 }));
 
-app.use('/upload', function (req, res, next){
+app.use('/upload', function (req, res, next) {
     var now = Date.now();
     jqupload.fileHandler({
-        uploadDir: function(){
+        uploadDir: function () {
             return __dirname + '/public/uploads/' + now;
         },
-        uploadUrl: function(){
+        uploadUrl: function () {
             return '/uploads/' + now;
         },
     });
@@ -79,15 +98,15 @@ app.get('/newsletter', function (req, res) {
     res.render('newsletter', {csrf: 'CSRF token goes here'});
 });
 
-app.get('/upload_file', function(req, res){
+app.get('/upload_file', function (req, res) {
     res.render('upload');
 });
 
-app.post('/process', function(req, res){
-    if(req.xhr || req.accepts('json, html') === 'json'){
-        res.send({ success: true});
-    } else{
-        res.redirect(303, 'thank-you')
+app.post('/process', function (req, res) {
+    if (req.xhr || req.accepts('json, html') === 'json') {
+        res.send({success: true});
+    } else {
+        res.redirect(303, 'thank-you');
     }
 });
 
@@ -106,6 +125,15 @@ app.get('/', function (req, res) {
     req.session.userName = 'Anonymous';
 });
 
+app.get('/fail', function (req, res) {
+    throw new Error('Nope!');
+});
+
+app.get('/epic-fail', function (req, res) {
+    process.nextTick(function () {
+        throw new Error('Kaboom!');
+    });
+});
 
 app.get('/about', function (req, res) {
     res.render('about', {
@@ -114,7 +142,7 @@ app.get('/about', function (req, res) {
     });
     var monster = req.cookies.monster;
     var signedMonster = req.signedCookies.signed_monster;
-    console.log('Username : '+ req.session.userName);
+    console.log('Username : ' + req.session.userName);
     console.log(monster);
     console.log(signedMonster);
 });
@@ -126,7 +154,7 @@ app.get('/contact', function (req, res) {
 });
 
 app.get('/jquery-test', function (req, res) {
-    res.render('jquery-test')
+    res.render('jquery-test');
 });
 
 app.get('/tours/hood-river', function (req, res) {
@@ -149,7 +177,7 @@ app.get('/headers', function (req, res) {
 });
 
 app.get('/nursery-rhyme', function (req, res) {
-    res.render('nursery-rhyme')
+    res.render('nursery-rhyme');
 });
 
 app.get('/data/nursery-rhyme', function (req, res) {
@@ -186,7 +214,7 @@ function getWeatherData() {
                 temp: '55.0 F (12.8 C)',
             },
         ]
-    }
+    };
 }
 
 app.use(function (req, res, next) {
@@ -199,3 +227,17 @@ app.use(function (err, req, res, next) {
     res.status(500);
     res.render('500');
 });
+
+function startServer() {
+    server = app.listen(app.get('port'), function () {
+        console.log('Express started in ' + app.get('env') +
+            ' mode on http://localhost:' + app.get('port') +
+            '; press Ctrl-C to terminate.');
+    });
+}
+
+if (require.main === module) {
+    startServer();
+} else {
+    module.exports = startServer;
+}
